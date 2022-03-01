@@ -1,4 +1,4 @@
-## go-crypto-pay-api
+## go-crypto-pay
 
 **[Crypto Pay](http://t.me/CryptoBot/?start=pay)** is a payment system based
 on [@CryptoBot](http://t.me/CryptoBot), which allows you to accept payments in cryptocurrency using the
@@ -135,7 +135,7 @@ For https://github.com/gin-gonic/gin:
 //  router is gin.Engine
 router.POST("/path/", func (c *gin.Context) {
     webhook.ServerHTTP(c.Writer, c.Request)
-}).
+})
 ```
 
 For https://github.com/julienschmidt/httprouter:
