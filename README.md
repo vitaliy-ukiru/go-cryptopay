@@ -159,5 +159,3 @@ For https://github.com/gorilla/mux
 // router is mux.Router
 router.Handle("/path", webhook)
 ```
-
-## Types
