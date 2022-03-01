@@ -82,7 +82,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("app_id=%d; name=%q; payment_bot=%q", app.Id, app.Name, app.PaymentBotUsername)
+	fmt.Printf(
+		"app_id=%d; name=%q; payment_bot=%q",
+		app.Id,
+		app.Name,
+		app.PaymentBotUsername,
+	)
 
 }
 ```
@@ -114,7 +119,8 @@ func main() {
 	})
 	client.OnInvoicePaid(func(update *cryptopay.WebhookUpdate) {
 		invoice := update.Payload
-		fmt.Printf("Invoice № %d for %s %s was paid on %s",
+		fmt.Printf(
+			"Invoice № %d for %s %s was paid on %s",
 			invoice.Id,
 			invoice.Amount,
 			invoice.Asset,
