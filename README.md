@@ -10,7 +10,7 @@ via [Crypto Pay API](https://telegra.ph/Crypto-Pay-API-11-25).
 ## Install
 
 ```shell
-go get github.com/vitaliy-ukiru/go-crypto-pay-api
+go get github.com/vitaliy-ukiru/go-crypto-pay
 ```
 
 ## Documentation
