@@ -10,7 +10,7 @@ via [Crypto Pay API](https://telegra.ph/Crypto-Pay-API-11-25).
 ## Install
 
 ```shell
-go get github.com/vitaliy-ukiru/go-crypto-pay
+go get -u github.com/vitaliy-ukiru/go-crypto-pay
 ```
 
 ## Documentation
@@ -27,8 +27,8 @@ you want to check whether the received error is such, call the `GetApiError` fun
 
 ```go
 if apiErr := cryptopay.GetApiError(err); apiErr != nil {
-    // handling error of api. 
-    // apiErr is *ApiError
+// handling error of api. 
+// apiErr is *ApiError
 }
 ```
 
@@ -39,7 +39,7 @@ if apiErr := cryptopay.GetApiError(err); apiErr != nil {
 - HttpClient - client for make requests. _Default `http.DefaultClient`_.
 - Webhook - webhook configure
     - OnError - handler for error handling in webhook.
-    - DefaultHandler - set of default handlers. Default empty.
+    - DefaultHandler - set of default handlers. _Default empty_.
 
 ### Networks in CryptoPay:
 
@@ -67,16 +67,14 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
 	cryptopay "github.com/vitaliy-ukiru/go-crypto-pay"
 )
 
 func main() {
 	client := cryptopay.NewClient(cryptopay.ClientSettings{
-		Token:      "your_token_here",
-		ApiHost:    cryptopay.TestNetHost,
-		HttpClient: http.DefaultClient,
+		Token:   "your_token_here",
+		ApiHost: cryptopay.TestNetHost,
 	})
 	app, err := client.GetMe()
 	if err != nil {
@@ -89,6 +87,36 @@ func main() {
 		app.PaymentBotUsername,
 	)
 
+}
+```
+
+</details>
+
+<details>
+<summary>transfer</summary>
+
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+
+	cryptopay "github.com/vitaliy-ukiru/go-crypto-pay"
+)
+
+func main() {
+	client := cryptopay.NewClient(cryptopay.ClientSettings{
+		Token: "your_token",
+	})
+	transfer, err := client.DoTransfer(-1, cryptopay.USDT, 100, "generate unique data", cryptopay.DoTransferOptions{
+		Comment: "You winner!",
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Transfer completed at %s", transfer.CompletedAt.Format(time.RFC850))
 }
 ```
 
@@ -140,7 +168,7 @@ For https://github.com/gin-gonic/gin:
 ```go
 //  router is gin.Engine
 router.POST("/path/", func (c *gin.Context) {
-    webhook.ServerHTTP(http.ResponseWriter(c.Writer), c.Request)
+webhook.ServerHTTP(http.ResponseWriter(c.Writer), c.Request)
 })
 ```
 
@@ -149,7 +177,7 @@ For https://github.com/julienschmidt/httprouter:
 ```go
 // router is httprouter.Router.
 router.POST("/path", func (w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-    webhook.ServerHTTP(w, r)
+webhook.ServerHTTP(w, r)
 })
 ```
 
