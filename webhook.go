@@ -106,28 +106,7 @@ func (w *Webhook) DeleteHandlerByIndex(updateType UpdateType, i int) {
 // By recommended use this like as http.Handler parameter for function http.Handle.
 //
 // If you use other router you can adapt. For this you must create handler that call this method.
-//
-// Add handler for "net/http" server:
-//		// You also can use Webhook as handler in http.ListenAndServer, but it is not recommended
-//		http.Handle("/path/", webhook)
-//		// ...
-//
-// For https://github.com/gin-gonic/gin:
-//
-//		//  router is gin.Engine instance
-//		router.POST("/path/, func(c *gin.Context) {
-//			webhook.ServerHTTP(c.Writer, c.Request)
-//		}).
-// For https://github.com/julienschmidt/httprouter:
-//
-// 		// router is httprouter.Router instance.
-// 		router.POST("/path", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-//			webhook.ServerHTTP(w, r)
-//		})
-// For https://github.com/gorilla/mux:
-//
-//		// router is mux.Router instance.
-//		router.Handle("/path", webhook)
+// Examples of adapt see in README.md file
 func (w Webhook) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	data, _ := io.ReadAll(r.Body)
