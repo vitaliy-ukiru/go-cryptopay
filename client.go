@@ -48,7 +48,7 @@ type Client struct {
 	w *Webhook
 }
 
-// NewClient constructor for Client.
+// NewClient returns new Client.
 func NewClient(settings ClientSettings) *Client {
 	if settings.Token == "" {
 		panic("invalid token")

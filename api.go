@@ -113,7 +113,7 @@ type ApiCore struct {
 	httpClient *http.Client
 }
 
-// NewApi is constructor function for ApiCore
+// NewApi returns new ApiCore
 func NewApi(token, url string, httpClient *http.Client) *ApiCore {
 	return &ApiCore{token: token, url: url, httpClient: httpClient}
 }
