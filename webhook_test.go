@@ -80,7 +80,6 @@ func TestWebhook_verifyUpdate(t *testing.T) {
 
 }
 
-
 func TestWebhook_Bind(t *testing.T) {
 	w := getWebhook(nil, nil)
 	var handlerResult bool
@@ -103,8 +102,8 @@ func TestWebhook_DeleteHandlerByIndex(t *testing.T) {
 	w := getWebhook(nil, nil)
 	handlerExecute := -1
 	for i := 0; i < 5; i++ {
-		func (index int) {
-			w.Bind("test", func(_ *WebhookUpdate){
+		func(index int) {
+			w.Bind("test", func(_ *WebhookUpdate) {
 				handlerExecute = index
 			})
 		}(i)
@@ -124,8 +123,8 @@ func TestWebhook_DeleteHandlerByIndex(t *testing.T) {
 func TestWebhook_DeleteHandlers(t *testing.T) {
 	w := getWebhook(map[UpdateType][]Handler{
 		UpdateInvoicePaid: {},
-		"test": {nil, nil},
-		"type_2": {nil},
+		"test":            {nil, nil},
+		"type_2":          {nil},
 	}, nil)
 	t.Run("current type", func(t *testing.T) {
 		w.DeleteHandlers(UpdateInvoicePaid)
@@ -150,7 +149,7 @@ func TestWebhook_ServeHTTP(t *testing.T) {
 			Id:          -1,
 			UpdateType:  UpdateInvoicePaid,
 			RequestDate: time.Now(),
-			Payload:     UpdateInvoice{
+			Payload: UpdateInvoice{
 				Id:              rand.Int(),
 				Status:          StatusPaid,
 				Hash:            "exc1Hash",
@@ -168,14 +167,14 @@ func TestWebhook_ServeHTTP(t *testing.T) {
 		w.Bind(UpdateInvoicePaid, func(update *WebhookUpdate) {
 			handled = update.Id
 		})
-		req , _:= http.NewRequest("POST", server.URL, bytes.NewReader(data))
+		req, _ := http.NewRequest("POST", server.URL, bytes.NewReader(data))
 		req.Header.Set(headerSignatureName, hex.EncodeToString(writeHmac(tokenHash, data)))
 		resp, err := client.Do(req)
 		if err != nil {
 			t.Error(err)
 		}
-		if resp.StatusCode != http.StatusNoContent {
-			t.Errorf("resp.StatusCode(%d) != http.StatusNoContent", resp.StatusCode)
+		if resp.StatusCode != http.StatusOK {
+			t.Errorf("resp.StatusCode(%d) != http.StatusOK", resp.StatusCode)
 		}
 		if handled != -1 {
 			t.Errorf("handler did not work")
@@ -187,7 +186,7 @@ func TestWebhook_ServeHTTP(t *testing.T) {
 			Id:          -2,
 			UpdateType:  UpdateInvoicePaid,
 			RequestDate: time.Now(),
-			Payload:     UpdateInvoice{
+			Payload: UpdateInvoice{
 				Id:              rand.Int(),
 				Status:          StatusPaid,
 				Hash:            "exc2Hash",
@@ -201,7 +200,7 @@ func TestWebhook_ServeHTTP(t *testing.T) {
 				PaidAnonymously: true,
 			},
 		})
-		req , _:= http.NewRequest("POST", server.URL, bytes.NewReader(data))
+		req, _ := http.NewRequest("POST", server.URL, bytes.NewReader(data))
 		resp, err := client.Do(req)
 		if err != nil {
 			t.Error(err)
