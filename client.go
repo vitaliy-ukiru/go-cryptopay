@@ -6,12 +6,12 @@ import (
 )
 
 type (
-	// ExchangeRatesInfo alias for slice of ExchangeRate.
-	ExchangeRatesInfo []ExchangeRate
+	// ExchangeRateArray alias for slice of ExchangeRate.
+	ExchangeRateArray []ExchangeRate
 	// BalanceInfo alias for slice of BalanceCurrency.
 	BalanceInfo []BalanceCurrency
-	// CurrenciesInfo alias for slice of CurrencyInfo
-	CurrenciesInfo []CurrencyInfo
+	// CurrencyInfoArray alias for slice of CurrencyInfo
+	CurrencyInfoArray []CurrencyInfo
 )
 
 // WebhookSettings for configure webhook in ClientSettings.
@@ -164,7 +164,7 @@ func (c *Client) GetBalance() (BalanceInfo, error) {
 }
 
 // GetExchangeRates is representation for api/getExchangeRates.
-func (c *Client) GetExchangeRates() (ExchangeRatesInfo, error) {
+func (c *Client) GetExchangeRates() (ExchangeRateArray, error) {
 	exchangeInfo, err := c.api.GetExchangeRates()
 	if err != nil {
 		return nil, err
@@ -176,7 +176,7 @@ func (c *Client) GetExchangeRates() (ExchangeRatesInfo, error) {
 }
 
 // GetCurrencies is representation for api/getCurrencies.
-func (c *Client) GetCurrencies() (CurrenciesInfo, error) {
+func (c *Client) GetCurrencies() (CurrencyInfoArray, error) {
 	currencies, err := c.api.GetCurrencies()
 	if err != nil {
 		return nil, err
@@ -250,8 +250,8 @@ func (b BalanceInfo) AsMapFloat() (map[Asset]float64, error) {
 	return balances, nil
 }
 
-// AsMap returns transformed CurrenciesInfo ([]CurrencyInfo) into map.
-func (c CurrenciesInfo) AsMap() map[Asset]CurrencyInfo {
+// AsMap returns transformed CurrencyInfoArray ([]CurrencyInfo) into map.
+func (c CurrencyInfoArray) AsMap() map[Asset]CurrencyInfo {
 	currencies := make(map[Asset]CurrencyInfo)
 	for _, currency := range c {
 		currencies[currency.Code] = currency
@@ -259,14 +259,14 @@ func (c CurrenciesInfo) AsMap() map[Asset]CurrencyInfo {
 	return currencies
 }
 
-// RatesKey is two-value key for ExchangeRatesInfo.
+// RatesKey is two-value key for ExchangeRateArray.
 type RatesKey struct {
 	Source Asset
 	Target Asset
 }
 
-// AsMap returns transformed ExchangeRatesInfo ([]ExchangeRate) into map.
-func (e ExchangeRatesInfo) AsMap() map[RatesKey]ExchangeRate {
+// AsMap returns transformed ExchangeRateArray ([]ExchangeRate) into map.
+func (e ExchangeRateArray) AsMap() map[RatesKey]ExchangeRate {
 	rates := make(map[RatesKey]ExchangeRate)
 	for _, exchangeRate := range e {
 		key := RatesKey{exchangeRate.Source, exchangeRate.Target}
@@ -276,7 +276,7 @@ func (e ExchangeRatesInfo) AsMap() map[RatesKey]ExchangeRate {
 }
 
 // Get returns exchange rate of target currency in source currency and the success indicator.
-func (e ExchangeRatesInfo) Get(source, target Asset) (string, bool) {
+func (e ExchangeRateArray) Get(source, target Asset) (string, bool) {
 	rate, ok := e.AsMap()[RatesKey{source, target}]
 	if !ok || !rate.IsValid {
 		return "", false

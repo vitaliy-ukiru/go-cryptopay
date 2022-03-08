@@ -36,7 +36,6 @@ func TestNewClient(t *testing.T) {
 	})
 }
 
-
 func TestClient_Alias(t *testing.T) {
 	a := getApi()
 	w := Webhook{tokenHash: []byte(tokenHash)}
@@ -73,10 +72,10 @@ func TestClient_CreateInvoice(t *testing.T) {
 	})
 	t.Run("with opt param usage", func(t *testing.T) {
 		_, err := c.CreateInvoice("", 0, CreateInvoiceOptions{
-			Asset:          ETH,
-			Amount:         "3.14",
+			Asset:  ETH,
+			Amount: "3.14",
 		})
-		if  err != nil {
+		if err != nil {
 			t.Error(err)
 		}
 	})
@@ -196,14 +195,14 @@ func TestBalanceInfo(t *testing.T) {
 }
 
 func TestCurrenciesInfo_AsMap(t *testing.T) {
-	var currencies CurrenciesInfo = []CurrencyInfo{
+	var currencies CurrencyInfoArray = []CurrencyInfo{
 		{
 			IsBlockchain: true,
-			Code: BTC,
+			Code:         BTC,
 		},
 		{
 			IsBlockchain: false,
-			Code: "USD",
+			Code:         "USD",
 		},
 	}
 	if !currencies.AsMap()[BTC].IsBlockchain {
@@ -213,7 +212,7 @@ func TestCurrenciesInfo_AsMap(t *testing.T) {
 }
 
 func TestExchangeRatesInfo(t *testing.T) {
-	var exchangeRates ExchangeRatesInfo = []ExchangeRate{
+	var exchangeRates ExchangeRateArray = []ExchangeRate{
 		{
 			IsValid: true,
 			Source:  BTC,
