@@ -140,7 +140,7 @@ For https://github.com/gin-gonic/gin:
 ```go
 //  router is gin.Engine
 router.POST("/path/", func (c *gin.Context) {
-    webhook.ServerHTTP(c.Writer, c.Request)
+    webhook.ServerHTTP(http.ResponseWriter(c.Writer), c.Request)
 })
 ```
 
