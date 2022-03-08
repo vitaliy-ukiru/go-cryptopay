@@ -124,12 +124,6 @@ func (a ApiError) Error() string {
 	return fmt.Sprintf("crypto-pay/api: api response %d - %s", a.Code, a.Name)
 }
 
-func (a Asset) String() string {
-	return string(a)
-}
-func (p PaidButton) String() string {
-	return string(p)
-}
-func (i InvoiceStatus) String() string {
-	return string(i)
-}
+func (a Asset) String() string         { return string(a) }
+func (p PaidButton) String() string    { return string(p) }
+func (i InvoiceStatus) String() string { return string(i) }
