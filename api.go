@@ -10,6 +10,7 @@ import (
 )
 
 // Aliases for officials hosts
+//goland:noinspection ALL
 const (
 	MainNetHost = "https://pay.crypt.bot"
 	TestNetHost = "https://testnet-pay.crypt.bot"
