@@ -120,8 +120,12 @@ func (w Webhook) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		w.badRequestError(rw, r, err, "")
 		return
 	}
-	rw.WriteHeader(http.StatusNoContent)
-	w.handleUpdate(update)
+	rw.WriteHeader(http.StatusOK)
+	if v, ok := w.handlers[update.UpdateType]; ok {
+		for _, handler := range v {
+			go handler(update)
+		}
+	}
 }
 
 // verifyUpdate comparing HMAC-SHA-256 signature of request body with a secret key that is SHA256 hash of app's token and header parameter in requestSignature argument.
@@ -131,28 +135,15 @@ func (w Webhook) verifyUpdate(requestBody, requestSignature []byte) bool {
 	return hmac.Equal(mac.Sum(nil), requestSignature)
 }
 
-// handleUpdate executes all handlers for given update in new goroutines.
-func (w Webhook) handleUpdate(update *WebhookUpdate) {
-	if v, ok := w.handlers[update.UpdateType]; ok {
-		for _, handler := range v {
-			go handler(update)
-		}
-	}
-}
-
-func (w Webhook) handleError(r *http.Request, err error) {
-	if w.OnError != nil {
-		w.OnError(r, err)
-	}
-}
-
 func (w Webhook) badRequestError(rw http.ResponseWriter, r *http.Request, err error, msg string) {
 	if msg != "" {
 		badRequest(rw, msg)
 	} else {
 		badRequest(rw, err.Error())
 	}
-	w.handleError(r, err)
+	if w.OnError != nil {
+		w.OnError(r, err)
+	}
 }
 
 // badRequest helper for response with 400 code.
