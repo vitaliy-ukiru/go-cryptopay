@@ -47,7 +47,7 @@ type WebhookUpdate struct {
 	// RequestDate is date the request was sent in ISO 8601 format.
 	RequestDate time.Time `json:"request_date"`
 	// Payload is base invoice information.
-	Payload UpdateInvoice `json:"payload"`
+	Payload Invoice `json:"payload"`
 }
 
 //Webhook representation http.Handler for works with CryptoPay updates

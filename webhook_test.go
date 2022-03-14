@@ -46,7 +46,7 @@ func TestWebhook_verifyUpdate(t *testing.T) {
 		Id:          0,
 		UpdateType:  UpdateInvoicePaid,
 		RequestDate: requestDate,
-		Payload: UpdateInvoice{
+		Payload: Invoice{
 			Id:              0,
 			Status:          "paid",
 			Hash:            "someHash",
@@ -149,7 +149,7 @@ func TestWebhook_ServeHTTP(t *testing.T) {
 			Id:          -1,
 			UpdateType:  UpdateInvoicePaid,
 			RequestDate: time.Now(),
-			Payload: UpdateInvoice{
+			Payload: Invoice{
 				Id:              rand.Int(),
 				Status:          StatusPaid,
 				Hash:            "exc1Hash",
@@ -186,7 +186,7 @@ func TestWebhook_ServeHTTP(t *testing.T) {
 			Id:          -2,
 			UpdateType:  UpdateInvoicePaid,
 			RequestDate: time.Now(),
-			Payload: UpdateInvoice{
+			Payload: Invoice{
 				Id:              rand.Int(),
 				Status:          StatusPaid,
 				Hash:            "exc2Hash",
