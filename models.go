@@ -53,7 +53,9 @@ type (
 		Name               string `json:"name"`                            // Name of application (sets on create app).
 		PaymentBotUsername string `json:"payment_processing_bot_username"` // Telegram username of the bot that processing payments.
 	}
-	UpdateInvoice struct {
+
+	// Invoice object.
+	Invoice struct {
 		Id              int           `json:"invoice_id"`                 // Unique ID for this invoice.
 		Status          InvoiceStatus `json:"status"`                     // Status of the invoice, can be either .
 		Hash            string        `json:"hash,omitempty"`             // Hash of the invoice.
@@ -65,19 +67,13 @@ type (
 		AllowAnonymous  bool          `json:"allow_anonymous,omitempty"`  // True, if the user can pay the invoice anonymously.
 		PaidAt          time.Time     `json:"paid_at,omitempty"`          // Optional. Date the invoice was paid in Unix time.
 		PaidAnonymously bool          `json:"paid_anonymously,omitempty"` // Optional. Text of the hidden message for this invoice.
-
-	}
-
-	// Invoice object.
-	Invoice struct {
-		UpdateInvoice
-		Description    string     `json:"description,omitempty"`     // Optional. Description for this invoice.
-		ExpirationDate string     `json:"expiration_date,omitempty"` // Optional. Date the invoice expires in Unix time. (not timestamp)
-		Comment        string     `json:"comment,omitempty"`         // Optional. Comment to the payment from the user.
-		HiddenMessage  string     `json:"hidden_message,omitempty"`  // Optional. Text of the hidden message for this invoice.
-		Payload        string     `json:"payload,omitempty"`         // Optional. Previously provided data for this invoice.
-		PaidBtnName    PaidButton `json:"paid_btn_name,omitempty"`   // Optional. Name of the button.
-		PaidBtnUrl     string     `json:"paid_btn_url,omitempty"`    // Optional. URL of the button.
+		Description     string        `json:"description,omitempty"`      // Optional. Description for this invoice.
+		ExpirationDate  string        `json:"expiration_date,omitempty"`  // Optional. Date the invoice expires in Unix time. (not timestamp)
+		Comment         string        `json:"comment,omitempty"`          // Optional. Comment to the payment from the user.
+		HiddenMessage   string        `json:"hidden_message,omitempty"`   // Optional. Text of the hidden message for this invoice.
+		Payload         string        `json:"payload,omitempty"`          // Optional. Previously provided data for this invoice.
+		PaidBtnName     PaidButton    `json:"paid_btn_name,omitempty"`    // Optional. Name of the button.
+		PaidBtnUrl      string        `json:"paid_btn_url,omitempty"`     // Optional. URL of the button.
 	}
 	// Transfer object
 	Transfer struct {
