@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"time"
@@ -111,12 +111,12 @@ func (w Webhook) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	data, _ := io.ReadAll(r.Body)
 	signature, _ := hex.DecodeString(r.Header.Get(headerSignatureName))
 	if !w.verifyUpdate(data, signature) {
-		w.badRequestError(rw, r, ErrorWrongSignature, wrongSignature)
+		w.badRequestError(rw, r, ErrorWrongSignature)
 		return
 	}
 	update := new(WebhookUpdate)
 	if err := json.Unmarshal(data, &update); err != nil {
-		w.badRequestError(rw, r, err, "")
+		w.badRequestError(rw, r, err)
 		return
 	}
 	rw.WriteHeader(http.StatusOK)
@@ -134,12 +134,8 @@ func (w Webhook) verifyUpdate(requestBody, requestSignature []byte) bool {
 	return hmac.Equal(mac.Sum(nil), requestSignature)
 }
 
-func (w Webhook) badRequestError(rw http.ResponseWriter, r *http.Request, err error, msg string) {
-	if msg != "" {
-		badRequest(rw, msg)
-	} else {
-		badRequest(rw, err.Error())
-	}
+func (w Webhook) badRequestError(rw http.ResponseWriter, r *http.Request, err error) {
+	badRequest(rw, err.Error())
 	if w.OnError != nil {
 		w.OnError(r, err)
 	}
