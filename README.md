@@ -1,5 +1,7 @@
 ## go-crypto-pay
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/vitaliy-ukiru/go-crypto-pay.svg)](https://pkg.go.dev/github.com/vitaliy-ukiru/go-crypto-pay)
+
 **[Crypto Pay](http://t.me/CryptoBot/?start=pay)** is a payment system based
 on [@CryptoBot](http://t.me/CryptoBot), which allows you to accept payments in cryptocurrency using the
 API.
