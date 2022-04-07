@@ -108,6 +108,10 @@ type (
 	}
 )
 
+// ApiCore is low-level (in library context) client for CryptoPay API
+// without convenient public interface and additional checks.
+//
+// Recommended using it only for specific operations.
 type ApiCore struct {
 	token      string
 	url        string
@@ -119,7 +123,7 @@ func NewApi(token, url string, httpClient *http.Client) *ApiCore {
 	return &ApiCore{token: token, url: url, httpClient: httpClient}
 }
 
-// urlFmt formatting URL, paste query params
+// urlFmt formats URL, paste query params
 func (c ApiCore) urlFmt(method string, queryParams string) string {
 	methodUrl := fmt.Sprintf("%s/api/%s", c.url, method)
 	if queryParams == emptyQuery {
@@ -128,9 +132,9 @@ func (c ApiCore) urlFmt(method string, queryParams string) string {
 	return methodUrl + "?" + queryParams
 }
 
-// apiCall make request to API and deserialization response body in dest argument
-func (c ApiCore) apiCall(method, queryParams string, dest interface{}) error {
-	req, err := http.NewRequest("GET", c.urlFmt(method, queryParams), nil)
+// apiCall makes request to API and deserialization response body in dest argument
+func (c ApiCore) apiCall(apiMethod, queryParams string, dest interface{}) error {
+	req, err := http.NewRequest("GET", c.urlFmt(apiMethod, queryParams), nil)
 	if err != nil {
 		return err
 	}
@@ -143,7 +147,7 @@ func (c ApiCore) apiCall(method, queryParams string, dest interface{}) error {
 
 }
 
-// GetMe call api/getMe.
+// GetMe calls api/getMe.
 func (c ApiCore) GetMe() (*GetMeResponse, error) {
 	var appInfo GetMeResponse
 	if err := c.apiCall(getMeMethod, emptyQuery, &appInfo); err != nil {
@@ -152,7 +156,7 @@ func (c ApiCore) GetMe() (*GetMeResponse, error) {
 	return &appInfo, nil
 }
 
-// CreateInvoice call api/createInvoice.
+// CreateInvoice calls api/createInvoice.
 func (c ApiCore) CreateInvoice(opt CreateInvoiceOptions) (*CreateInvoiceResponse, error) {
 	var newInvoice CreateInvoiceResponse
 	err := c.apiCall(createInvoiceMethod, opt.QueryParams(), &newInvoice)
@@ -162,7 +166,7 @@ func (c ApiCore) CreateInvoice(opt CreateInvoiceOptions) (*CreateInvoiceResponse
 	return &newInvoice, nil
 }
 
-// DoTransfer call api/transfer.
+// DoTransfer calls api/transfer.
 func (c ApiCore) DoTransfer(opt DoTransferOptions) (*DoTransferResponse, error) {
 	var newTransfer DoTransferResponse
 	err := c.apiCall(transferMethod, opt.QueryParams(), &newTransfer)
@@ -172,7 +176,7 @@ func (c ApiCore) DoTransfer(opt DoTransferOptions) (*DoTransferResponse, error) 
 	return &newTransfer, nil
 }
 
-// GetInvoices call api/getInvoices. Set opt as nil for empty API params.
+// GetInvoices calls api/getInvoices. Set opt as nil for empty API params.
 func (c ApiCore) GetInvoices(opt *GetInvoicesOptions) (*GetInvoicesResponse, error) {
 	var invoices GetInvoicesResponse
 	var queryParams string
@@ -186,7 +190,7 @@ func (c ApiCore) GetInvoices(opt *GetInvoicesOptions) (*GetInvoicesResponse, err
 	return &invoices, nil
 }
 
-// GetBalance call api/getBalance.
+// GetBalance calls api/getBalance.
 func (c ApiCore) GetBalance() (*GetBalanceResponse, error) {
 	var balanceInfo GetBalanceResponse
 	err := c.apiCall(getBalanceMethod, emptyQuery, &balanceInfo)
@@ -196,7 +200,7 @@ func (c ApiCore) GetBalance() (*GetBalanceResponse, error) {
 	return &balanceInfo, nil
 }
 
-// GetExchangeRates call api/getExchangeRates.
+// GetExchangeRates calls api/getExchangeRates.
 func (c ApiCore) GetExchangeRates() (*GetExchangeRatesResponse, error) {
 	var exchangesInfo GetExchangeRatesResponse
 	err := c.apiCall(getExchangeRatesMethod, emptyQuery, &exchangesInfo)
@@ -206,7 +210,7 @@ func (c ApiCore) GetExchangeRates() (*GetExchangeRatesResponse, error) {
 	return &exchangesInfo, nil
 }
 
-// GetCurrencies call api/getCurrencies.
+// GetCurrencies calls api/getCurrencies.
 func (c ApiCore) GetCurrencies() (*GetCurrenciesResponse, error) {
 	var currencyInfo GetCurrenciesResponse
 	err := c.apiCall(getCurrenciesMethod, emptyQuery, &currencyInfo)
@@ -216,7 +220,7 @@ func (c ApiCore) GetCurrencies() (*GetCurrenciesResponse, error) {
 	return &currencyInfo, nil
 }
 
-// createEncodeQuery create url.Values from given map and encode to string.
+// createEncodeQuery creates url.Values from given map and encode to string.
 func createEncodeQuery(params map[string]string) string {
 	values := url.Values{}
 	for k, v := range params {
@@ -227,7 +231,7 @@ func createEncodeQuery(params map[string]string) string {
 	return values.Encode()
 }
 
-// QueryParams encode options to query params for `createInvoice` method.
+// QueryParams encodes options to query params for `createInvoice` method.
 func (opt CreateInvoiceOptions) QueryParams() string {
 	params := map[string]string{
 		"asset":           opt.Asset.String(),
@@ -247,7 +251,7 @@ func (opt CreateInvoiceOptions) QueryParams() string {
 
 }
 
-// QueryParams encode options to query params for `transfer` method.
+// QueryParams encodes options to query params for `transfer` method.
 func (opt DoTransferOptions) QueryParams() string {
 	return createEncodeQuery(map[string]string{
 		"user_id":                   strconv.Itoa(opt.UserId),
@@ -260,7 +264,7 @@ func (opt DoTransferOptions) QueryParams() string {
 
 }
 
-// QueryParams encode options to query params for `getInvoices` method.
+// QueryParams encodes options to query params for `getInvoices` method.
 func (opt GetInvoicesOptions) QueryParams() string {
 	params := map[string]string{
 		"asset":        opt.Asset.String(),
