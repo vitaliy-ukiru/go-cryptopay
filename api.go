@@ -145,69 +145,75 @@ func (c ApiCore) apiCall(method, queryParams string, dest interface{}) error {
 
 // GetMe call api/getMe.
 func (c ApiCore) GetMe() (*GetMeResponse, error) {
-	appInfo := new(GetMeResponse)
-	if err := c.apiCall(getMeMethod, emptyQuery, appInfo); err != nil {
+	var appInfo GetMeResponse
+	if err := c.apiCall(getMeMethod, emptyQuery, &appInfo); err != nil {
 		return nil, err
 	}
-	return appInfo, nil
+	return &appInfo, nil
 }
 
 // CreateInvoice call api/createInvoice.
 func (c ApiCore) CreateInvoice(opt CreateInvoiceOptions) (*CreateInvoiceResponse, error) {
-	newInvoice := new(CreateInvoiceResponse)
-	if err := c.apiCall(createInvoiceMethod, opt.QueryParams(), newInvoice); err != nil {
+	var newInvoice CreateInvoiceResponse
+	err := c.apiCall(createInvoiceMethod, opt.QueryParams(), &newInvoice)
+	if err != nil {
 		return nil, err
 	}
-	return newInvoice, nil
+	return &newInvoice, nil
 }
 
 // DoTransfer call api/transfer.
 func (c ApiCore) DoTransfer(opt DoTransferOptions) (*DoTransferResponse, error) {
-	newTransfer := new(DoTransferResponse)
-	if err := c.apiCall(transferMethod, opt.QueryParams(), newTransfer); err != nil {
+	var newTransfer DoTransferResponse
+	err := c.apiCall(transferMethod, opt.QueryParams(), &newTransfer)
+	if err != nil {
 		return nil, err
 	}
-	return newTransfer, nil
+	return &newTransfer, nil
 }
 
 // GetInvoices call api/getInvoices. Set opt as nil for empty API params.
 func (c ApiCore) GetInvoices(opt *GetInvoicesOptions) (*GetInvoicesResponse, error) {
-	invoices := new(GetInvoicesResponse)
+	var invoices GetInvoicesResponse
 	var queryParams string
 	if opt != nil {
 		queryParams = opt.QueryParams()
 	}
-	if err := c.apiCall(getInvoicesMethod, queryParams, invoices); err != nil {
+	err := c.apiCall(getInvoicesMethod, queryParams, &invoices)
+	if err != nil {
 		return nil, err
 	}
-	return invoices, nil
+	return &invoices, nil
 }
 
 // GetBalance call api/getBalance.
 func (c ApiCore) GetBalance() (*GetBalanceResponse, error) {
-	balanceInfo := new(GetBalanceResponse)
-	if err := c.apiCall(getBalanceMethod, emptyQuery, balanceInfo); err != nil {
+	var balanceInfo GetBalanceResponse
+	err := c.apiCall(getBalanceMethod, emptyQuery, &balanceInfo)
+	if err != nil {
 		return nil, err
 	}
-	return balanceInfo, nil
+	return &balanceInfo, nil
 }
 
 // GetExchangeRates call api/getExchangeRates.
 func (c ApiCore) GetExchangeRates() (*GetExchangeRatesResponse, error) {
-	exchangesInfo := new(GetExchangeRatesResponse)
-	if err := c.apiCall(getExchangeRatesMethod, emptyQuery, exchangesInfo); err != nil {
+	var exchangesInfo GetExchangeRatesResponse
+	err := c.apiCall(getExchangeRatesMethod, emptyQuery, &exchangesInfo)
+	if err != nil {
 		return nil, err
 	}
-	return exchangesInfo, nil
+	return &exchangesInfo, nil
 }
 
 // GetCurrencies call api/getCurrencies.
 func (c ApiCore) GetCurrencies() (*GetCurrenciesResponse, error) {
-	currencyInfo := new(GetCurrenciesResponse)
-	if err := c.apiCall(getCurrenciesMethod, emptyQuery, currencyInfo); err != nil {
+	var currencyInfo GetCurrenciesResponse
+	err := c.apiCall(getCurrenciesMethod, emptyQuery, &currencyInfo)
+	if err != nil {
 		return nil, err
 	}
-	return currencyInfo, nil
+	return &currencyInfo, nil
 }
 
 // createEncodeQuery create url.Values from given map and encode to string.
