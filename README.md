@@ -29,8 +29,9 @@ you want to check whether the received error is such, call the `GetApiError` fun
 
 ```go
 if apiErr := cryptopay.GetApiError(err); apiErr != nil {
-// handling error of api. 
-// apiErr is *ApiError
+    // handling error of api. 
+    // apiErr is *ApiError
+    log.Error(apiErr.Code)
 }
 ```
 
@@ -96,7 +97,6 @@ func main() {
 
 <details>
 <summary>transfer</summary>
-
 
 ```go
 package main
@@ -170,7 +170,7 @@ For https://github.com/gin-gonic/gin:
 ```go
 //  router is gin.Engine
 router.POST("/path/", func (c *gin.Context) {
-webhook.ServerHTTP(http.ResponseWriter(c.Writer), c.Request)
+    webhook.ServerHTTP(http.ResponseWriter(c.Writer), c.Request)
 })
 ```
 
@@ -179,7 +179,7 @@ For https://github.com/julienschmidt/httprouter:
 ```go
 // router is httprouter.Router.
 router.POST("/path", func (w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-webhook.ServerHTTP(w, r)
+    webhook.ServerHTTP(w, r)
 })
 ```
 
