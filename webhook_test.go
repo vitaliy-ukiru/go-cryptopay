@@ -213,7 +213,7 @@ func TestWebhook_ServeHTTP(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		if string(body) != wrongSignature {
+		if string(body) != ErrorWrongSignature.Error() {
 			t.Error("body != wrong signature")
 		}
 	})

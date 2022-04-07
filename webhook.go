@@ -28,7 +28,6 @@ const (
 
 const (
 	headerSignatureName = "crypto-pay-api-signature"
-	wrongSignature      = "wrong request signature"
 )
 
 // ErrorWrongSignature is returned if webhook don't verify update.
@@ -36,7 +35,7 @@ const (
 // Also, it could happen when request body was changed  from outside.
 //
 // If this happens, the update is not processed, but Webhook.OnError is called
-var ErrorWrongSignature = fmt.Errorf("crypto-pay/webhook: %s", wrongSignature)
+var ErrorWrongSignature = errors.New("wrong request signature")
 
 // WebhookUpdate is object of update from request body.
 type WebhookUpdate struct {
