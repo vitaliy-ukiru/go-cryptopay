@@ -219,7 +219,7 @@ func (c *Client) Once(updateType UpdateType, handler Handler) {
 
 // IsSuccessfully indicates whether API request success.
 func (r BaseApiResponse) IsSuccessfully() bool {
-	return r.Ok && r.Error == nil
+	return r.Error == nil && r.Ok
 }
 
 // AsMap returns transformed BalanceInfo ([]BalanceCurrency) into map,
