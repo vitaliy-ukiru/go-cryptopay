@@ -29,7 +29,7 @@ const (
 )
 
 type (
-	// CreateInvoiceOptions for `createInvoice` api method.
+	// CreateInvoiceOptions is params for `createInvoice` api method.
 	CreateInvoiceOptions struct {
 		Asset          Asset      // Currency code.
 		Amount         string     // Amount of the invoice in float.
@@ -42,7 +42,7 @@ type (
 		AllowAnonymous bool       // Optional. Allow a user to pay the invoice anonymously. Default is true.
 		ExpiresIn      int        // Optional. You can set a payment time limit for the invoice in seconds. Values between 1-2678400 are accepted
 	}
-	// DoTransferOptions for `transfer` (DoTransfer) api method.
+	// DoTransferOptions is params for `transfer` (DoTransfer) api method.
 	DoTransferOptions struct {
 		UserId                  int    // Telegram user ID. User must have previously used @CryptoBot (@CryptoTestnetBot for testnet).
 		Asset                   Asset  // Currency code.
@@ -51,7 +51,7 @@ type (
 		Comment                 string // Optional. Comment for the transfer. Users will see this comment when they receive a notification about the transfer. Up to 1024 symbols.
 		DisableSendNotification bool   // Optional. Pass true if the user should not receive a notification about the transfer. Default is false.
 	}
-	// GetInvoicesOptions for `getInvoices` api method.
+	// GetInvoicesOptions is params for `getInvoices` api method.
 	GetInvoicesOptions struct {
 		Asset      Asset         // Currency code.
 		InvoiceIds []string      // Optional. Invoice IDs
@@ -66,42 +66,42 @@ type (
 	BaseApiResponse struct {
 		// Ok indicates whether the request was successfully executed.
 		Ok bool `json:"ok"`
-		// Error from API, nil on successfully.
+		// Error from CryptoPay API, nil on successfully.
 		Error *ApiError `json:"error,omitempty"`
 	}
-	// GetMeResponse  for `getMe` method
+	// GetMeResponse is response object for `getMe` method
 	GetMeResponse struct {
 		BaseApiResponse
 		Result *AppInfo `json:"result,omitempty"`
 	}
-	// CreateInvoiceResponse  for `createInvoice` method
+	// CreateInvoiceResponse is response object for `createInvoice` method
 	CreateInvoiceResponse struct {
 		BaseApiResponse
 		Result *Invoice `json:"result,omitempty"`
 	}
-	// DoTransferResponse for `transfer` method
+	// DoTransferResponse is response object for `transfer` method
 	DoTransferResponse struct {
 		BaseApiResponse
 		Result *Transfer `json:"result,omitempty"`
 	}
-	// GetInvoicesResponse for `getInvoices` method
+	// GetInvoicesResponse is response object for `getInvoices` method
 	GetInvoicesResponse struct {
 		BaseApiResponse
 		Result struct {
 			Items []Invoice `json:"items"`
 		} `json:"result,omitempty"`
 	}
-	// GetBalanceResponse for `getBalance` method
+	// GetBalanceResponse is response object for `getBalance` method
 	GetBalanceResponse struct {
 		BaseApiResponse
 		Result []BalanceCurrency `json:"result,omitempty"`
 	}
-	// GetExchangeRatesResponse for `getExchangeRates` method
+	// GetExchangeRatesResponse is response object for `getExchangeRates` method
 	GetExchangeRatesResponse struct {
 		BaseApiResponse
 		Result []ExchangeRate `json:"result,omitempty"`
 	}
-	// GetCurrenciesResponse for `getCurrencies` method
+	// GetCurrenciesResponse is response object for `getCurrencies` method
 	GetCurrenciesResponse struct {
 		BaseApiResponse
 		Result []CurrencyInfo `json:"result,omitempty"`
