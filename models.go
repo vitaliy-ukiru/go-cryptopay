@@ -13,7 +13,7 @@ type Asset string
 const (
 	BTC  Asset = "BTC"
 	TON  Asset = "TON"
-	ETH  Asset = "ETH" // ETH ONLY TESTNET
+	ETH  Asset = "ETH"
 	USDT Asset = "USDT"
 	USDC Asset = "USDC"
 	BUSD Asset = "BUSD"
