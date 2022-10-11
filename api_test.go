@@ -1,4 +1,4 @@
-package go_crypto_pay
+package cryptopay
 
 import (
 	"encoding/json"
@@ -68,7 +68,7 @@ func TestApiCore_GetMe(t *testing.T) {
 }
 
 func TestApiCore_CreateInvoice(t *testing.T) {
-		inv, err := getApi().CreateInvoice(CreateInvoiceOptions{
+	inv, err := getApi().CreateInvoice(CreateInvoiceOptions{
 		Asset:     TON,
 		Amount:    "3.14",
 		ExpiresIn: 1,
@@ -166,8 +166,6 @@ func TestApiCore_GetCurrencies(t *testing.T) {
 	}
 }
 
-
-
 func TestEmptyToken(t *testing.T) {
 	api := getApi()
 	api.token = ""
@@ -216,8 +214,6 @@ func writeJson(rw http.ResponseWriter, code int, v interface{}, args ...interfac
 	rw.Write(data)
 }
 
-
-
 func ApiClientServer() *httptest.Server {
 	usedSpendIds := make(map[string]bool)
 	onceApiServer.Do(func() {
@@ -237,8 +233,8 @@ func ApiClientServer() *httptest.Server {
 				writeJson(rw, 200, JSON{
 					"ok": true,
 					"result": JSON{
-						"app_id": appId,
-						"name": "",
+						"app_id":                          appId,
+						"name":                            "",
 						"payment_processing_bot_username": "",
 					},
 				})

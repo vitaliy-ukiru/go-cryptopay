@@ -1,4 +1,4 @@
-package go_crypto_pay
+package cryptopay
 
 import (
 	"errors"
@@ -16,6 +16,3 @@ func TestGetApiError(t *testing.T) {
 
 	}
 }
-
-
-
