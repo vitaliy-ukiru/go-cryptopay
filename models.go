@@ -61,8 +61,10 @@ type (
 		Hash            string        `json:"hash,omitempty"`             // Hash of the invoice.
 		Asset           Asset         `json:"asset"`                      // Currency code.
 		Amount          string        `json:"amount"`                     // Amount of the invoice.
+		Fee             string        `json:"fee"`                        // Optional. Amount of charged service fees.
 		PayUrl          string        `json:"pay_url,omitempty"`          // URL should be presented to the user to pay the invoice.
 		CreatedAt       time.Time     `json:"created_at"`                 // Date the invoice was created in ISO 8601 format.
+		USDRate         string        `json:"usd_rate"`                   // Optional. Price of the Asset in USD at the time the invoice was paid.
 		AllowComments   bool          `json:"allow_comments,omitempty"`   // True, if the user can add comment to the payment.
 		AllowAnonymous  bool          `json:"allow_anonymous,omitempty"`  // True, if the user can pay the invoice anonymously.
 		PaidAt          time.Time     `json:"paid_at,omitempty"`          // Optional. Date the invoice was paid in Unix time.
