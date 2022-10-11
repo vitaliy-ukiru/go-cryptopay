@@ -11,7 +11,7 @@ via [Crypto Pay API](https://telegra.ph/Crypto-Pay-API-11-25).
 ## Install
 
 ```shell
-go get -u github.com/vitaliy-ukiru/go-crypto-pay
+go get -u github.com/vitaliy-ukiru/go-cryptopay
 ```
 
 ## Documentation
@@ -44,10 +44,10 @@ if apiErr := cryptopay.GetApiError(err); apiErr != nil {
 
 ### Networks in CryptoPay:
 
-| Net       | Bot                                                          | Hostname                       | Code reference
-| --------- | ------------------------------------------------------------ | ------------------------------ | -------------
-| mainnet   | [@CryptoBot](https://t.me/CryptoBot?start=pay)               | https://pay.crypt.bot/         | `cryptopay.MainNetHost`
-| testnet   | [@CryptoTestnetBot](https://t.me/CryptoTestnetBot?start=pay) | https://testnet-pay.crypt.bot/ | `cryptopay.TestNetHost`
+| Net     | Bot                                                          | Hostname                       | Code reference          |
+|---------|--------------------------------------------------------------|--------------------------------|-------------------------|
+| mainnet | [@CryptoBot](https://t.me/CryptoBot?start=pay)               | https://pay.crypt.bot/         | `cryptopay.MainNetHost` |
+| testnet | [@CryptoTestnetBot](https://t.me/CryptoTestnetBot?start=pay) | https://testnet-pay.crypt.bot/ | `cryptopay.TestNetHost` |
 
 ### Webhooks
 
@@ -67,26 +67,26 @@ type. But if you don't use std server, see the [Adaptation](#Webhook-Adaptation)
 package main
 
 import (
-	"fmt"
+  "fmt"
 
-	cryptopay "github.com/vitaliy-ukiru/go-crypto-pay"
+  "github.com/vitaliy-ukiru/go-cryptopay"
 )
 
 func main() {
-	client := cryptopay.NewClient(cryptopay.ClientSettings{
-		Token:   "your_token_here",
-		ApiHost: cryptopay.TestNetHost,
-	})
-	app, err := client.GetMe()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf(
-		"app_id=%d; name=%q; payment_bot=%q",
-		app.Id,
-		app.Name,
-		app.PaymentBotUsername,
-	)
+  client := cryptopay.NewClient(cryptopay.ClientSettings{
+    Token:   "your_token_here",
+    ApiHost: cryptopay.TestNetHost,
+  })
+  app, err := client.GetMe()
+  if err != nil {
+    panic(err)
+  }
+  fmt.Printf(
+    "app_id=%d; name=%q; payment_bot=%q",
+    app.Id,
+    app.Name,
+    app.PaymentBotUsername,
+  )
 
 }
 ```
@@ -104,7 +104,7 @@ import (
 	"fmt"
 	"time"
 
-	cryptopay "github.com/vitaliy-ukiru/go-crypto-pay"
+	"github.com/vitaliy-ukiru/go-cryptopay"
 )
 
 func main() {
@@ -134,7 +134,7 @@ import (
 	"net/http"
 	"time"
 
-	cryptopay "github.com/vitaliy-ukiru/go-crypto-pay"
+	"github.com/vitaliy-ukiru/go-cryptopay"
 )
 
 func main() {
@@ -164,25 +164,25 @@ func main() {
 
 If you use other router you can adapt. For this you must create handler that call `ServeHTTP` method.
 
-For https://github.com/gin-gonic/gin:
+For [gin-gonic/gin](https://github.com/gin-gonic/gin):
 
 ```go
 //  router is gin.Engine
 router.POST("/path/", func (c *gin.Context) {
-webhook.ServerHTTP(http.ResponseWriter(c.Writer), c.Request)
+    webhook.ServerHTTP(http.ResponseWriter(c.Writer), c.Request)
 })
 ```
 
-For https://github.com/julienschmidt/httprouter:
+For [julienschmidt/httprouter](https://github.com/julienschmidt/httprouter):
 
 ```go
 // router is httprouter.Router.
 router.POST("/path", func (w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-webhook.ServerHTTP(w, r)
+    webhook.ServerHTTP(w, r)
 })
 ```
 
-For https://github.com/gorilla/mux
+For [gorilla/mux](https://github.com/gorilla/mux)
 
 ```go
 // router is mux.Router
