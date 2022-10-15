@@ -5,17 +5,18 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"time"
 )
 
 type (
 	// Handler is signature of handler for Webhook
 	Handler func(update *WebhookUpdate)
-	// ErrorHandler is signature of Webhook.OnError
-	ErrorHandler func(r *http.Request, err error)
+	// ErrorHandler is signature of Webhook.OnInHandlerError
+	ErrorHandler         func(update *WebhookUpdate, err error)
+	InternalErrorHandler func(rw io.Writer, err error)
 )
 
 // UpdateType is type of webhook update.
@@ -26,128 +27,125 @@ const (
 	UpdateInvoicePaid UpdateType = "invoice_paid"
 )
 
-const (
-	headerSignatureName = "crypto-pay-api-signature"
-	wrongSignature      = "wrong request signature"
-)
+const HeaderSignatureName = "crypto-pay-api-signature"
 
 // ErrorWrongSignature is returned if webhook don't verify update.
 // For example, this can happen if someone who knows webhook's path endpoint and sends fake requests.
 // Also, it could happen when request body was changed  from outside.
 //
-// If this happens, the update is not processed, but Webhook.OnError is called
-var ErrorWrongSignature = fmt.Errorf("crypto-pay/webhook: %s", wrongSignature)
+// If this happens, the update is not processed, but Webhook.OnInHandlerError is called
+var ErrorWrongSignature = errors.New("crypto-pay/webhook:wrong request signature")
+
+type WebhookRequest struct {
+	Signature  string
+	Body       []byte
+	BodyWriter io.Writer
+}
+
+type Listener interface {
+	Listen(updates chan<- WebhookRequest, stop chan struct{}) error
+}
+
+type Dispatcher interface {
+	Dispatch(update *WebhookUpdate) error
+}
 
 // WebhookUpdate is object of update from request body.
 type WebhookUpdate struct {
 	// Id is Non-unique update ID.
 	Id int `json:"update_id"`
+
 	// UpdateType is webhook update type.
 	UpdateType UpdateType `json:"update_type"`
+
 	// RequestDate is date the request was sent in ISO 8601 format.
 	RequestDate time.Time `json:"request_date"`
+
 	// Payload is base invoice information.
 	Payload Invoice `json:"payload"`
 }
 
 //Webhook representation http.Handler for works with CryptoPay updates
 type Webhook struct {
-	// handlers set of split by update type
-	handlers map[UpdateType][]Handler
-	// OnError handler for errors
-	OnError ErrorHandler
+	OnWebhookError   InternalErrorHandler
+	OnInHandlerError ErrorHandler
+
+	l       Listener
+	d       Dispatcher
+	updates chan WebhookRequest
+
 	// tokenHash is SHA256 hash of app's token.
 	// Webhook getting only hash because it minimizes calls hash functions and process time for verifyUpdate.
 	tokenHash []byte
 }
 
 // NewWebhook returns new Webhook.
-func NewWebhook(token string, defaultHandlers map[UpdateType][]Handler, onError ErrorHandler) *Webhook {
-	handlers := defaultHandlers
-	if handlers == nil {
-		handlers = make(map[UpdateType][]Handler)
+//func NewWebhook(token string, defaultHandlers map[UpdateType][]Handler, onError ErrorHandler) *Webhook {
+//	handlers := defaultHandlers
+//	if handlers == nil {
+//		handlers = make(map[UpdateType][]Handler)
+//	}
+//	hash := sha256.New()
+//	hash.Write([]byte(token))
+//	return &Webhook{handlers: handlers, OnInHandlerError: onError, tokenHash: hash.Sum(nil)}
+//}
+
+func (w Webhook) Run() error {
+	if w.updates != nil {
+		return errors.New("webhook already running")
 	}
-	hash := sha256.New()
-	hash.Write([]byte(token))
-	return &Webhook{handlers: handlers, OnError: onError, tokenHash: hash.Sum(nil)}
+	w.updates = make(chan WebhookRequest)
+
+	stop := make(chan struct{})
+	go func() {
+		for {
+			select {
+			case req := <-w.updates:
+				upd, err := w.verify(req)
+				if err != nil {
+					w.error(err, req.BodyWriter)
+				}
+				if err := w.d.Dispatch(upd); err != nil {
+					w.error(err, nil)
+				}
+			case <-stop:
+				close(w.updates)
+				return
+			}
+		}
+	}()
+	return w.l.Listen(w.updates, stop)
 }
 
-// Bind add handler given update type. Returns handler index.
-func (w *Webhook) Bind(updateType UpdateType, handler Handler) int {
-	v, ok := w.handlers[updateType]
-	if !ok {
-		v = []Handler{handler}
-	} else {
-		v = append(v, handler)
+// verify comparing HMAC-SHA-256 signature of request body
+// with a secret key that is SHA256 hash of app's token and header parameter
+// in requestSignature argument.
+func (w Webhook) verify(request WebhookRequest) (*WebhookUpdate, error) {
+	signature, err := hex.DecodeString(request.Signature)
+	if err != nil {
+		return nil, fmt.Errorf("cannot decode request signature: %w", err)
 	}
-	w.handlers[updateType] = v
-	return len(w.handlers[updateType]) - 1
-}
-
-// DeleteHandlers deletes all handlers given type. Also, can delete all handlers for all update types.
-// If you want to delete all handlers for all types, then pass "*" as a parameter
-func (w *Webhook) DeleteHandlers(updateType UpdateType) {
-	if updateType == "*" {
-		w.handlers = make(map[UpdateType][]Handler)
-		return
-	}
-	delete(w.handlers, updateType)
-}
-
-// DeleteHandlerByIndex deletes handler given type and index.
-func (w *Webhook) DeleteHandlerByIndex(updateType UpdateType, i int) {
-	a := w.handlers[updateType]
-	w.handlers[updateType] = append(a[:i], a[i+1:]...)
-}
-
-// ServeHTTP implementing http.Handler.
-//
-// Thanks to this, you can transmit a webhook as a handler for a "net/http" server.
-// By recommended use this like as http.Handler parameter for function http.Handle.
-//
-// If you use other router you can adapt. For this you must create handler that call this method.
-// Examples of adapt see in README.md file
-func (w Webhook) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	data, _ := io.ReadAll(r.Body)
-	signature, _ := hex.DecodeString(r.Header.Get(headerSignatureName))
-	if !w.verifyUpdate(data, signature) {
-		w.badRequestError(rw, r, ErrorWrongSignature, wrongSignature)
-		return
+	mac := hmac.New(sha256.New, w.tokenHash)
+	mac.Write(request.Body)
+	if !hmac.Equal(mac.Sum(nil), signature) {
+		return nil, ErrorWrongSignature
 	}
 	update := new(WebhookUpdate)
-	if err := json.Unmarshal(data, &update); err != nil {
-		w.badRequestError(rw, r, err, "")
-		return
+	if err = json.Unmarshal(request.Body, update); err != nil {
+		return nil, fmt.Errorf("cannot unmarshal body to WebhookUpdate: %w", err)
 	}
-	rw.WriteHeader(http.StatusOK)
-	if v, ok := w.handlers[update.UpdateType]; ok {
-		for _, handler := range v {
-			go handler(update)
+	return update, nil
+}
+
+func (w Webhook) error(err error, other any) {
+	switch obj := other.(type) {
+	case io.Writer:
+		if w.OnWebhookError != nil {
+			w.OnWebhookError(obj, err)
+		}
+	case *WebhookUpdate:
+		if w.OnInHandlerError != nil {
+			w.OnInHandlerError(obj, err)
 		}
 	}
-}
-
-// verifyUpdate comparing HMAC-SHA-256 signature of request body with a secret key that is SHA256 hash of app's token and header parameter in requestSignature argument.
-func (w Webhook) verifyUpdate(requestBody, requestSignature []byte) bool {
-	mac := hmac.New(sha256.New, w.tokenHash)
-	mac.Write(requestBody)
-	return hmac.Equal(mac.Sum(nil), requestSignature)
-}
-
-func (w Webhook) badRequestError(rw http.ResponseWriter, r *http.Request, err error, msg string) {
-	if msg != "" {
-		badRequest(rw, msg)
-	} else {
-		badRequest(rw, err.Error())
-	}
-	if w.OnError != nil {
-		w.OnError(r, err)
-	}
-}
-
-// badRequest helper for response with 400 code.
-func badRequest(rw http.ResponseWriter, message string) {
-	rw.WriteHeader(http.StatusBadRequest)
-	rw.Write([]byte(message))
 }
