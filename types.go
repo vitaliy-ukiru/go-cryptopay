@@ -71,17 +71,16 @@ type CurrencyInfo struct {
 	IsFiat       bool `json:"is_fiat"`       // Indicates what currency is fiat (real)
 }
 
-func (c CurrencyInfo) Type() CurrencyType {
+func (c CurrencyInfo) Type() (ct CurrencyType) {
 	switch {
 	case c.IsBlockchain:
-		return CurrencyBlockchain
+		ct = CurrencyBlockchain
 	case c.IsStablecoin:
-		return CurrencyStablecoin
+		ct = CurrencyStablecoin
 	case c.IsFiat:
-		return CurrencyFiat
-	default:
-		return CurrencyNone
+		ct = CurrencyFiat
 	}
+	return ct
 }
 
 type CurrencyType uint8
