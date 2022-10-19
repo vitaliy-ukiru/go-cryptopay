@@ -13,7 +13,7 @@ import (
 
 type (
 	// Handler is signature of handler for Webhook
-	Handler func(update *WebhookUpdate)
+	Handler func(update *WebhookUpdate) error
 	// ErrorHandler is signature of Webhook.OnInHandlerError
 	ErrorHandler         func(update *WebhookUpdate, err error)
 	InternalErrorHandler func(rw io.Writer, err error)
