@@ -32,6 +32,14 @@ type Api struct {
 
 // NewApi returns new Api
 func NewApi(token, url string, httpClient *http.Client) *Api {
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
+
+	if url == "" {
+		url = MainNetHost
+	}
+
 	return &Api{token: token, url: url, httpClient: httpClient}
 }
 
