@@ -55,8 +55,8 @@ type WebhookUpdate struct {
 	// Id is Non-unique update ID.
 	Id int `json:"update_id"`
 
-	// UpdateType is webhook update type.
-	UpdateType UpdateType `json:"update_type"`
+	// Type is webhook update type.
+	Type UpdateType `json:"update_type"`
 
 	// RequestDate is date the request was sent in ISO 8601 format.
 	RequestDate time.Time `json:"request_date"`
