@@ -41,8 +41,8 @@ type ClientSettings struct {
 //
 // If you want set regular params in opt parameter - set regular parameters default value (empty string for Asset & string, 0 for numbers).
 type Client struct {
-	// api is ApiCore instance for request to API.
-	api *ApiCore
+	// api for requests to CryptoBot API..
+	api *Api
 	// w is Webhook instance for get update from API.
 	// Client just have Webhook object & aliases for Webhook methods.
 	w *Webhook
@@ -70,8 +70,8 @@ func NewClient(settings ClientSettings) *Client {
 	}
 }
 
-// Api return instance of ApiCore
-func (c Client) Api() ApiCore { return *c.api }
+// Api return instance of Api
+func (c Client) Api() *Api { return c.api }
 
 // Webhook return instance of Webhook
 func (c Client) Webhook() Webhook { return *c.w }

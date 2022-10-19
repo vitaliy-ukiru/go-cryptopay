@@ -22,7 +22,7 @@ or [@CryptoTestnetBot](http://t.me/CryptoTestnetBot?start=pay) (for testnet), se
 create a new app and get API Token.
 
 In this library, the high-level is the `Client`.  
-Internally, it calls the `ApiCore` methods, which is lower-level and is essentially a gateway for API
+Internally, it calls the `Api` methods, which is lower-level and is essentially a gateway for API
 requests. The `Client` methods, in addition to the usual errors, can return an api error `(ApiError)`. If
 you want to check whether the received error is such, call the `GetApiError` function.
 
