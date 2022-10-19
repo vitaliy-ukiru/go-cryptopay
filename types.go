@@ -85,6 +85,21 @@ func (c CurrencyInfo) Type() (ct CurrencyType) {
 
 type CurrencyType uint8
 
+func (c CurrencyType) String() string {
+	switch c {
+	case CurrencyNone:
+		return "None"
+	case CurrencyBlockchain:
+		return "Blockchain"
+	case CurrencyStablecoin:
+		return "Stablecoin"
+	case CurrencyFiat:
+		return "Fiat"
+	default:
+		return "Unknown(" + string(c) + ")"
+	}
+}
+
 const (
 	CurrencyNone       CurrencyType = 'n'
 	CurrencyBlockchain CurrencyType = 'b'
