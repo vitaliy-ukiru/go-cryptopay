@@ -67,28 +67,33 @@ type WebhookUpdate struct {
 
 //Webhook representation http.Handler for works with CryptoPay updates
 type Webhook struct {
+	l Listener
+	d Dispatcher
+
 	OnWebhookError   InternalErrorHandler
 	OnInHandlerError ErrorHandler
 
-	l       Listener
-	d       Dispatcher
 	updates chan WebhookRequest
-
 	// tokenHash is SHA256 hash of app's token.
 	// Webhook getting only hash because it minimizes calls hash functions and process time for verifyUpdate.
 	tokenHash []byte
 }
 
-// NewWebhook returns new Webhook.
-//func NewWebhook(token string, defaultHandlers map[UpdateType][]Handler, onError ErrorHandler) *Webhook {
-//	handlers := defaultHandlers
-//	if handlers == nil {
-//		handlers = make(map[UpdateType][]Handler)
-//	}
-//	hash := sha256.New()
-//	hash.Write([]byte(token))
-//	return &Webhook{handlers: handlers, OnInHandlerError: onError, tokenHash: hash.Sum(nil)}
-//}
+func NewWebhook(
+	tokenHash []byte,
+	l Listener,
+	d Dispatcher,
+	onWebhookError InternalErrorHandler,
+	onInHandlerError ErrorHandler,
+) *Webhook {
+	return &Webhook{
+		d:                d,
+		l:                l,
+		tokenHash:        tokenHash,
+		OnWebhookError:   onWebhookError,
+		OnInHandlerError: onInHandlerError,
+	}
+}
 
 func (w Webhook) Run() error {
 	if w.updates != nil {
