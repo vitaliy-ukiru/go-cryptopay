@@ -35,6 +35,10 @@ func NewApi(token, url string, httpClient *http.Client) *ApiCore {
 	return &ApiCore{token: token, url: url, httpClient: httpClient}
 }
 
+func (a *ApiCore) HttpClient() *http.Client {
+	return a.httpClient
+}
+
 // urlFmt formatting URL, paste query params
 func (a *ApiCore) urlFmt(method string, queryParams url.Values) string {
 	methodUrl := fmt.Sprintf("%s/api/%s", a.url, method)
