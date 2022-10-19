@@ -74,7 +74,7 @@ func NewClient(settings ClientSettings) *Client {
 func (c Client) Api() *Api { return c.api }
 
 // Webhook return instance of Webhook
-func (c Client) Webhook() Webhook { return *c.w }
+func (c Client) Webhook() *Webhook { return c.w }
 
 // GetMe is representation of api/getMe.
 func (c *Client) GetMe() (*AppInfo, error) {
