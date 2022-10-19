@@ -125,11 +125,13 @@ func (w Webhook) verify(request WebhookRequest) (*WebhookUpdate, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot decode request signature: %w", err)
 	}
+
 	mac := hmac.New(sha256.New, w.tokenHash)
 	mac.Write(request.Body)
 	if !hmac.Equal(mac.Sum(nil), signature) {
 		return nil, ErrorWrongSignature
 	}
+
 	update := new(WebhookUpdate)
 	if err = json.Unmarshal(request.Body, update); err != nil {
 		return nil, fmt.Errorf("cannot unmarshal body to WebhookUpdate: %w", err)
