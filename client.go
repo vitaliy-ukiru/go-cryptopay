@@ -78,14 +78,7 @@ func (c Client) Webhook() Webhook { return *c.w }
 
 // GetMe is representation of api/getMe.
 func (c *Client) GetMe() (*AppInfo, error) {
-	app, err := c.api.GetMe()
-	if err != nil {
-		return nil, err
-	}
-	if !app.IsSuccessfully() {
-		return nil, app.Error
-	}
-	return app.Result, nil
+	return doRequest[*AppInfo](c.api, GetMeRequest{})
 }
 
 // CreateInvoice is representation for api/createInvoice.
@@ -101,10 +94,7 @@ func (c *Client) CreateInvoice(asset Asset, amount float64, opt CreateInvoiceOpt
 	if err != nil {
 		return nil, err
 	}
-	if !invoice.IsSuccessfully() {
-		return nil, invoice.Error
-	}
-	return invoice.Result, nil
+	return doRequest[*Invoice](c.api, CreateInvoiceRequest{Options: opt})
 }
 
 // DoTransfer is representation for api/transfer. Error regular or ApiError.
@@ -128,154 +118,45 @@ func (c *Client) DoTransfer(userId int, asset Asset, amount float64, spendId str
 	if err != nil {
 		return nil, err
 	}
-	if !transfer.IsSuccessfully() {
-		return nil, transfer.Error
-	}
-	return transfer.Result, nil
+	return doRequest[*Transfer](c.api, DoTransferRequest{Options: opt})
 }
 
 // GetInvoices is representation for api/getInvoices.
 // Set opt parameter as nil for empty API params.
 func (c *Client) GetInvoices(opt *GetInvoicesOptions) ([]Invoice, error) {
-	invoices, err := c.api.GetInvoices(opt)
-	if err != nil {
-		return nil, err
-	}
-	if !invoices.IsSuccessfully() {
-		return nil, invoices.Error
-	}
-	return invoices.Result.Items, nil
+	resp, err := doRequest[struct {
+		Items []Invoice `json:"items"`
+	}](c.api, GetInvoicesRequest{Options: opt})
+	return resp.Items, err
 }
 
 // GetBalance is representation for api/getBalance.
 func (c *Client) GetBalance() (BalanceInfo, error) {
-	balance, err := c.api.GetBalance()
-	if err != nil {
-		return nil, err
-	}
-	if !balance.IsSuccessfully() {
-		return nil, balance.Error
-	}
-	return balance.Result, nil
+	return doRequest[BalanceInfo](c.api, GetBalanceRequest{})
 }
 
 // GetExchangeRates is representation for api/getExchangeRates.
-func (c *Client) GetExchangeRates() (ExchangeRateArray, error) {
-	exchangeInfo, err := c.api.GetExchangeRates()
-	if err != nil {
-		return nil, err
-	}
-	if !exchangeInfo.IsSuccessfully() {
-		return nil, exchangeInfo.Error
-	}
-	return exchangeInfo.Result, nil
+func (c *Client) GetExchangeRates() (ExchangeRates, error) {
+	return doRequest[ExchangeRates](c.api, GetExchangeRatesRequest{})
+
 }
 
 // GetCurrencies is representation for api/getCurrencies.
 func (c *Client) GetCurrencies() (CurrencyInfoArray, error) {
-	currencies, err := c.api.GetCurrencies()
-	if err != nil {
-		return nil, err
+	return doRequest[CurrencyInfoArray](c.api, GetCurrenciesRequest{})
+}
+
+// doRequest needed because in go 1.18 methods cannot have type params
+// but this function solving this problem.
+func doRequest[T any](api *Api, request Request) (T, error) {
+	resp := new(Response[T])
+	var err error
+	if err = api.Do(request, resp); err != nil {
+		return resp.Result, err
 	}
-	if !currencies.IsSuccessfully() {
-		return nil, currencies.Error
+
+	if resp.Error != nil {
+		err = resp.Error
 	}
-	return currencies.Result, nil
-}
-
-// On alias for Webhook.Bind. Add handler to slice for given update type. Return index of new handler
-func (c *Client) On(updateType UpdateType, handler Handler) int {
-	return c.w.Bind(updateType, handler)
-}
-
-// OnInvoicePaid is shortcut for Client.On with update type "invoice_paid".
-func (c *Client) OnInvoicePaid(handler Handler) int {
-	return c.w.Bind(UpdateInvoicePaid, handler)
-}
-
-// DeleteAllHandlersFor alias for Webhook.DeleteHandlers.
-//
-// Delete all handlers for given update type.
-// Also if update type is "*" reset handlers to empty value for EVERY UPDATE TYPE
-func (c *Client) DeleteAllHandlersFor(updateType UpdateType) {
-	c.w.DeleteHandlers(updateType)
-}
-
-func (c *Client) DeleteHandler(updateType UpdateType, i int) {
-	c.w.DeleteHandlerByIndex(updateType, i)
-}
-
-// Once add handler that will call once.
-func (c *Client) Once(updateType UpdateType, handler Handler) {
-	// Index for adding handler
-	i := len(c.w.handlers[updateType])
-
-	c.w.Bind(updateType, func(update *WebhookUpdate) {
-		handler(update)
-		a := c.w.handlers[updateType]
-		c.w.handlers[updateType] = append(a[:i], a[i+1:]...)
-	})
-}
-
-// IsSuccessfully indicates whether API request success.
-func (r BaseApiResponse) IsSuccessfully() bool {
-	return r.Ok && r.Error == nil
-}
-
-// AsMap returns transformed BalanceInfo ([]BalanceCurrency) into map,
-// key - currency code (Asset), value - balance for Asset as string
-func (b BalanceInfo) AsMap() map[Asset]string {
-	balances := make(map[Asset]string)
-	for _, currency := range b {
-		balances[currency.CurrencyCode] = currency.Available
-	}
-	return balances
-}
-
-// AsMapFloat returns transformed BalanceInfo ([]BalanceCurrency) into map,
-// key - currency code (Asset), value - balance for Asset as float64
-func (b BalanceInfo) AsMapFloat() (map[Asset]float64, error) {
-	balances := make(map[Asset]float64)
-	for _, currency := range b {
-		balance, err := strconv.ParseFloat(currency.Available, 64)
-		if err != nil {
-			return nil, err
-		}
-		balances[currency.CurrencyCode] = balance
-	}
-	return balances, nil
-}
-
-// AsMap returns transformed CurrencyInfoArray ([]CurrencyInfo) into map.
-func (c CurrencyInfoArray) AsMap() map[Asset]CurrencyInfo {
-	currencies := make(map[Asset]CurrencyInfo)
-	for _, currency := range c {
-		currencies[currency.Code] = currency
-	}
-	return currencies
-}
-
-// RatesKey is two-value key for ExchangeRateArray.
-type RatesKey struct {
-	Source Asset
-	Target Asset
-}
-
-// AsMap returns transformed ExchangeRateArray ([]ExchangeRate) into map.
-func (e ExchangeRateArray) AsMap() map[RatesKey]ExchangeRate {
-	rates := make(map[RatesKey]ExchangeRate)
-	for _, exchangeRate := range e {
-		key := RatesKey{exchangeRate.Source, exchangeRate.Target}
-		rates[key] = exchangeRate
-	}
-	return rates
-}
-
-// Get returns exchange rate of target currency in source currency and the success indicator.
-func (e ExchangeRateArray) Get(source, target Asset) (string, bool) {
-	rate, ok := e.AsMap()[RatesKey{source, target}]
-	if !ok || !rate.IsValid {
-		return "", false
-	}
-	return rate.Rate, true
+	return resp.Result, err
 }
