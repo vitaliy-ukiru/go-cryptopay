@@ -1,37 +1,31 @@
 package cryptopay
 
 import (
+	"crypto/sha256"
+	"errors"
+	"math/big"
 	"net/http"
-	"strconv"
-)
 
-type (
-	// ExchangeRateArray alias for slice of ExchangeRate.
-	ExchangeRateArray []ExchangeRate
-	// BalanceInfo alias for slice of BalanceCurrency.
-	BalanceInfo []BalanceCurrency
-	// CurrencyInfoArray alias for slice of CurrencyInfo
-	CurrencyInfoArray []CurrencyInfo
+	"github.com/vitaliy-ukiru/go-cryptopay/internal"
 )
 
 // WebhookSettings for configure webhook in ClientSettings.
 type WebhookSettings struct {
-	// OnError is handler for error in webhook.
-	OnError func(r *http.Request, err error)
-	// DefaultHandlers is set of default handlers. Default creates new set.
-	DefaultHandlers map[UpdateType][]Handler
+	Dispatcher         Dispatcher
+	Listener           Listener
+	OnErrorFromHandler ErrorHandler
+	OnErrorFromWebhook InternalErrorHandler
 }
 
-// ClientSettings for easy configure NewClient.
-type ClientSettings struct {
+// ClientConfig for easy configure NewClient.
+type ClientConfig struct {
 	// Token of CryptoPay App.
 	Token string
 	// ApiHost url to api host. Default mainnet (MainNetHost).
 	ApiHost string
 	// HttpClient for make requests. Default http.DefaultClient.
-	HttpClient *http.Client
-	// Webhook settings. If set default value webhook can correct work.
-	Webhook WebhookSettings
+	HttpClient      *http.Client
+	DisableValidate bool
 }
 
 // Client is high-level API.
@@ -49,25 +43,48 @@ type Client struct {
 }
 
 // NewClient returns new Client.
-func NewClient(settings ClientSettings) *Client {
-	if settings.Token == "" {
-		panic("invalid token")
-	}
-	httpClient := settings.HttpClient
-	if httpClient == nil {
-		httpClient = http.DefaultClient
-	}
-	apiHost := settings.ApiHost
-	if apiHost == "" {
-		apiHost = MainNetHost
-	}
-	api := NewApi(settings.Token, apiHost, httpClient)
+func NewClient(api *Api, webhook *Webhook) *Client {
+	return &Client{api: api, w: webhook}
+}
 
-	w := NewWebhook(settings.Token, settings.Webhook.DefaultHandlers, settings.Webhook.OnError)
-	return &Client{
-		api: api,
-		w:   w,
+func NewClientWithConfig(cfg ClientConfig, webhookCfg *WebhookSettings) (*Client, error) {
+	api := NewApi(cfg.Token, cfg.ApiHost, cfg.HttpClient)
+
+	var webhook *Webhook
+	if webhookCfg != nil {
+		hash := sha256.Sum256(internal.StringToBytes(cfg.Token))
+		webhook = NewWebhook(
+			hash[:],
+			webhookCfg.Listener,
+			webhookCfg.Dispatcher,
+			webhookCfg.OnErrorFromWebhook,
+			webhookCfg.OnErrorFromHandler,
+		)
 	}
+	client := &Client{api: api, w: webhook}
+	if cfg.DisableValidate {
+		return client, nil
+	}
+
+	// Validating
+	if cfg.Token == "" {
+		return nil, ErrInvalidToken
+	}
+	appId, err := internal.ValidateToken(cfg.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	me, err := client.GetMe()
+	if err != nil {
+		return nil, err
+	}
+
+	if me.Id != appId {
+		return nil, errors.New("difference appId in token and getMe")
+	}
+
+	return client, nil
 }
 
 // Api return instance of Api
@@ -82,7 +99,6 @@ func (c *Client) GetMe() (*AppInfo, error) {
 }
 
 // CreateInvoice is representation for api/createInvoice.
-//
 func (c *Client) CreateInvoice(asset Asset, amount float64, params *CreateInvoiceOptions) (*Invoice, error) {
 	var opt CreateInvoiceOptions
 	if params != nil {
@@ -99,8 +115,8 @@ func (c *Client) CreateInvoice(asset Asset, amount float64, params *CreateInvoic
 
 // DoTransfer is representation for api/transfer. Error regular or ApiError.
 //
-// If you want set regular params in opt - set regular parameters default value (empty string for Asset & string, 0 for numbers)
-// spendId must be unique for every operation.
+// If you want set regular params in opt - set regular parameters default value.
+//spendId must be unique for every operation.
 func (c *Client) DoTransfer(userId int64, asset Asset, amount float64, spendId string, params *DoTransferOptions) (*Transfer, error) {
 	var opt DoTransferOptions
 	if params != nil {
