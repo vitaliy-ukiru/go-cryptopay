@@ -27,9 +27,9 @@ requests. The `Client` methods, in addition to the usual errors, can return an a
 you want to check whether the received error is such, call the `GetApiError` function.
 
 ```go
-if apiErr := cryptopay.GetApiError(err); apiErr != nil {
-// handling error of api. 
-// apiErr is *ApiError
+if apiErr := cryptopay.AsApiError(err); apiErr != nil {
+    // handling error of api. 
+    // apiErr is *ApiError
 }
 ```
 
@@ -39,7 +39,7 @@ if apiErr := cryptopay.GetApiError(err); apiErr != nil {
 - ApiHost - url to api host. _Default mainnet_.
 - HttpClient - client for make requests. _Default `http.DefaultClient`_.
 - Webhook - webhook configure
-    - OnError - handler for error handling in webhook.
+    - OnInHandlerError - handler for error handling in webhook.
     - DefaultHandler - set of default handlers. _Default empty_.
 
 ### Networks in CryptoPay:
@@ -141,7 +141,7 @@ func main() {
 	client := cryptopay.NewClient(cryptopay.ClientSettings{
 		Token: "your_token", // token required for webhooks, because using for verification updates
 		Webhook: cryptopay.WebhookSettings{
-			OnError: func(_ *http.Request, err error) {
+			OnInHandlerError: func(_ *http.Request, err error) {
 				panic(err)
 			},
 		},
