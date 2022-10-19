@@ -83,16 +83,16 @@ func (c *Client) GetMe() (*AppInfo, error) {
 
 // CreateInvoice is representation for api/createInvoice.
 //
-func (c *Client) CreateInvoice(asset Asset, amount float64, opt CreateInvoiceOptions) (*Invoice, error) {
+func (c *Client) CreateInvoice(asset Asset, amount float64, params *CreateInvoiceOptions) (*Invoice, error) {
+	var opt CreateInvoiceOptions
+	if params != nil {
+		opt = *params
+	}
 	if asset != "" {
 		opt.Asset = asset
 	}
 	if amount != 0 {
-		opt.Amount = strconv.FormatFloat(amount, 'f', -1, 64)
-	}
-	invoice, err := c.api.CreateInvoice(opt)
-	if err != nil {
-		return nil, err
+		opt.Amount = new(big.Float).SetFloat64(amount)
 	}
 	return doRequest[*Invoice](c.api, CreateInvoiceRequest{Options: opt})
 }
@@ -101,7 +101,11 @@ func (c *Client) CreateInvoice(asset Asset, amount float64, opt CreateInvoiceOpt
 //
 // If you want set regular params in opt - set regular parameters default value (empty string for Asset & string, 0 for numbers)
 // spendId must be unique for every operation.
-func (c *Client) DoTransfer(userId int, asset Asset, amount float64, spendId string, opt DoTransferOptions) (*Transfer, error) {
+func (c *Client) DoTransfer(userId int64, asset Asset, amount float64, spendId string, params *DoTransferOptions) (*Transfer, error) {
+	var opt DoTransferOptions
+	if params != nil {
+		opt = *params
+	}
 	if userId != 0 {
 		opt.UserId = userId
 	}
@@ -112,11 +116,7 @@ func (c *Client) DoTransfer(userId int, asset Asset, amount float64, spendId str
 		opt.SpendId = spendId
 	}
 	if amount != 0 {
-		opt.Amount = strconv.FormatFloat(amount, 'f', -1, 64)
-	}
-	transfer, err := c.api.DoTransfer(opt)
-	if err != nil {
-		return nil, err
+		opt.Amount = new(big.Float).SetFloat64(amount)
 	}
 	return doRequest[*Transfer](c.api, DoTransferRequest{Options: opt})
 }
